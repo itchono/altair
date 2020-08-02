@@ -35,27 +35,7 @@ class Stroke {
 EVENT TRIGGERS
 */
 
-// wizardy stupid JS code
 var mouseDown = 0
-
-document.body.onmousedown = function() { 
-    rect = canvas.getBoundingClientRect()
-    mouseDown = 1
-
-    if (inRect(rect, mouseX, mouseY)) {
-        strokes.push(new Stroke(colour.repeat(1), weight)) // add new strokes 
-    }
-    
-}
-document.body.onmouseup = function() {
-    rect = canvas.getBoundingClientRect()
-    mouseDown = 0
-
-    // check for empty lists
-    if (!strokes[strokes.length-1].points.length) {
-        strokes.pop() // remove old strokes
-    }
-}
 
 onmousemove = function(e){
     mouseX = e.clientX
@@ -71,7 +51,7 @@ onmousemove = function(e){
 
 onresize = function() {
     canvas.width = 0
-    canvas.width = drawingboard.clientWidth
+    canvas.width = drawingboard.clientWidth - 2
     canvas.height = canvas.width
     draw()
 }
@@ -94,18 +74,47 @@ function newCanvas() {
 
     drawingboard = document.getElementById("drawingboard")
 
-    canvas.width = drawingboard.clientWidth
+    canvas.width = drawingboard.clientWidth - 2
     canvas.height = canvas.width
-    canvas.style="border:1px solid #222222;"
+    canvas.style="border:1px solid #222222;touch-action: none;"
 
     ctx = canvas.getContext('2d')
 
     drawingboard.appendChild(canvas)
 
+    
+    // CANVAS ATTRIBUTES
+    canvas.onmousedown = function() { 
+        mouseDown = 1
+        strokes.push(new Stroke(colour.repeat(1), weight)) // add new strokes 
+    }
+    canvas.onmouseup = function() {
+        mouseDown = 0
+        // check for empty lists
+        cleanstrokes()
+    }
+
+    canvas.ontouchstart = function(e) {
+        strokes.push(new Stroke(colour.repeat(1), weight)) // add new strokes 
+
+    }
+
+    canvas.ontouchend = cleanstrokes
+
+    canvas.ontouchmove = function(e) {
+        rect = canvas.getBoundingClientRect()
+        strokes[strokes.length-1].points.push(new Point((e.touches[0].clientX - rect.left)/rect.width, (e.touches[0].clientY - rect.top)/rect.height)) 
+    }
+
     setInterval(draw, 20); // creates a routine to run the draw function
 }
 
-
+function cleanstrokes() {
+    // deletes empty strokes if last stroke was empty
+    if (!strokes[strokes.length-1].points.length) {
+        strokes.pop() // remove old strokes
+    }
+}
 
 
 function draw() {
@@ -125,8 +134,6 @@ function draw() {
                 ctx.lineTo(point.x*ctx.canvas.width, point.y*ctx.canvas.height)
                 ctx.stroke();
             })
-
-            ctx.closePath()
         }
     })
 }
