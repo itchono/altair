@@ -109,7 +109,7 @@ function clickbutton() {
 function exportdrawing() {
     img = new Image()
     
-    img.src = canvas.toDataURL("image/jpeg")
+    img.src = canvas.toDataURL("image/png")
 
     drawingboard = document.getElementById("drawingboard")
 
