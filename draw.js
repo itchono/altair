@@ -154,7 +154,9 @@ function exportdrawing() {
     img.src = canvas.toDataURL("image/png")
     exportbox = document.getElementById("exportbox")
     exportbox.appendChild(img)
+}
 
+function exportdrawingdownload() {
     // Downloads the image
     link = document.createElement("a")
     link.href = img.src
