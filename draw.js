@@ -6,8 +6,7 @@ var drawingboard
 var mouseX
 var mouseY
 
-let strokes = []
-let points = []
+let strokes = [] // List of strokes made by the user.
 
 onmousemove = function(e){mouseX = e.clientX; mouseY = e.clientY}
 
@@ -22,16 +21,13 @@ document.body.onmouseup = function() {
 }
 
 class Point {
-
     constructor(x,y) {
         this.x = x;
         // NOTE: use percentage value
         this.y = y;
         //this.r = r;
     }
-    
   }
-
 
 function newCanvas() {
 
@@ -51,6 +47,8 @@ function newCanvas() {
 }
 
 function draw() {
+    // Called once every 20 ms to update the screen
+
     canvas.width = 0
     canvas.width = drawingboard.clientWidth
     canvas.height = canvas.width
@@ -97,7 +95,20 @@ function clickbutton() {
 }
 
 function exportdrawing() {
+    var img = new Image()
+    
+    img.src = canvas.toDataURL("image/png")
 
+    drawingboard = document.getElementById("drawingboard")
+
+    drawingboard.appendChild(img)
+}
+
+function clearcanvas() {
+    // Clears the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    strokes = []
 }
 
 const copyToClipboard = str => {
