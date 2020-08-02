@@ -15,23 +15,17 @@
 
     <body onload="newCanvas()">
 
-
         <div class="container pt-3 pb-3 bg-light" >
-
-            
             <h1>Comrade Drawing Tool</h1>
             <p>Simple drawing tool. WIP</p>
             <a href="https://github.com/itchono">GitHub Link</a>
-
-
-            
         </div>
 
-        <div class="container-fluid p-3" >
+        <div class="container-fluid p-3">
 
             <div class="row">
 
-                <div class="col-xl m-3" id="drawingboard">
+                <div class="col-lg m-3" id="drawingboard">
     
                     <h2>Canvas</h2>
                 
@@ -42,23 +36,47 @@
     
                 <div class="col-sm m-3 bg-light">
 
-                    <h2>Drawing Controls</h2>
+                    <h2>Drawing Controls</h2> <br>
 
-                    <input type="button" value="button test" onclick="clickbutton()"></input>
+                    <h4>Colour and Stroke Weight</h4>
 
+                    <input type="color" onchange="changecolour(this)" value="#222222" style="width:50%;">
+
+                    <input type ="number" min="1" max="10" value="2" onchange="changeweight(this)" style="width:15%;">
+
+                    <br>
+                    <br>
+                    <input type="button" value="Undo (Ctrl-Z)" onclick="undo()"></input>
+
+                    <br>
+                    <br>
                     <input type="button" value="Clear Canvas" onclick="clearcanvas()"></input>
+                    
+                    <br>
+                    <br>
+                    <h4>Export</h4>
 
                     <input type="button" value="Export Drawing (Download)" onclick="exportdrawing()"></input>
 
                     <input type="button" id = "copybutton" value="Export Drawing (Copy Data)" onclick="exportdrawingcopy()"></input>
-                    
-
     
                 </div>
     
                 
     
             </div>
+
+            <div class="row">
+                <div class="col-lg m-3" id="exportbox">
+    
+                    <h2>Exported Drawings</h2>
+
+    
+                </div>
+
+            </div>
+
+            
 
 
         </div>
