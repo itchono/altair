@@ -62,8 +62,6 @@ reframe = function() {
     canvasTop = rect.top
 }
 
-redraw = function() {ctx.clearRect(0, 0, canvas.width, canvas.height);draw();}
-
 onscroll = reframe
 
 document.addEventListener('keydown', function(event) {
@@ -102,7 +100,6 @@ function newCanvas() {
     canvas.onmouseup = function() {
         mouseDown = 0
         cleanstrokes() // check for empty lists
-        redraw()
     }
 
     canvas.ontouchstart = function(e) {
@@ -110,7 +107,7 @@ function newCanvas() {
         strokes[strokes.length-1].points.push(new Point((e.touches[0].clientX - canvasLeft)/canvas.width, (e.touches[0].clientY - canvasTop)/canvas.height)) 
     }
 
-    canvas.ontouchend = function(){cleanstrokes(); redraw()}
+    canvas.ontouchend = cleanstrokes
 
     canvas.ontouchmove = function(e) { strokes[strokes.length-1].points.push(new Point((e.touches[0].clientX - canvasLeft)/canvas.width, (e.touches[0].clientY - canvasTop)/canvas.height)) }
 
@@ -128,13 +125,19 @@ function cleanstrokes() {
 
 function draw() {
     // Called once every 20 ms to update the screen
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     strokes.forEach(function(stroke, index, arr) {
-        points = stroke.points
+        // Iterate through each stroke
+
+        points = stroke.points // pull the points in the stroke
 
         switch(stroke.points.length) {
-            case 0: break;
+            case 0: break; // don't draw if there's nothing
 
             case 1:
+                // Single point
                 ctx.beginPath()
                 ctx.arc(points[0].x*canvas.width, points[0].y*canvas.height, stroke.weight, 0, 2 * Math.PI)
                 ctx.fillStyle = stroke.colour
@@ -177,7 +180,7 @@ function clearcanvas() {
 function undo() {
     // Undoes a step
     strokes.pop()
-    redraw()
+    draw()
 }
 
 function exportdrawing() {
