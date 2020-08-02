@@ -2,13 +2,14 @@
 Drawing module
 */
 
+// Components
 var canvas
 var ctx
 var drawingboard
 
-var mouseX
-var mouseY
-
+// Drawing Metrics
+var canvasLeft
+var canvasTop
 var colour = "#222222"
 var weight = 2
 
@@ -37,24 +38,33 @@ EVENT TRIGGERS
 
 var mouseDown = 0
 
-onmousemove = function(e){
-    mouseX = e.clientX
-    mouseY = e.clientY
-
-    rect = canvas.getBoundingClientRect()
-
-    if (mouseDown && inRect(rect, mouseX, mouseY)) { 
-        strokes[strokes.length-1].points.push(new Point((mouseX - rect.left)/rect.width, (mouseY - rect.top)/rect.height)) 
+onmousemove = function(e){ 
+    if (mouseDown) {
+        strokes[strokes.length-1].points.push(new Point((e.clientX - canvasLeft)/canvas.width, (e.clientY - canvasTop)/canvas.height)) 
     }
-
 }
 
 onresize = function() {
     canvas.width = 0
     canvas.width = drawingboard.clientWidth - 2
     canvas.height = canvas.width
+
+    rect = canvas.getBoundingClientRect()
+    canvasLeft = rect.left
+    canvasTop = rect.top
+    
     draw()
 }
+
+reframe = function() {
+    rect = canvas.getBoundingClientRect()
+    canvasLeft = rect.left
+    canvasTop = rect.top
+}
+
+redraw = function() {ctx.clearRect(0, 0, canvas.width, canvas.height);draw();}
+
+onscroll = reframe
 
 document.addEventListener('keydown', function(event) {
     if (event.ctrlKey && event.key === 'z') {
@@ -67,7 +77,6 @@ function changecolour(input) { colour = input.value }
 function changeweight(input) { weight = input.value }
 
 
-
 function newCanvas() {
 
     canvas = document.createElement("canvas")
@@ -76,6 +85,7 @@ function newCanvas() {
 
     canvas.width = drawingboard.clientWidth - 2
     canvas.height = canvas.width
+
     canvas.style="border:1px solid #222222;touch-action: none;"
 
     ctx = canvas.getContext('2d')
@@ -84,56 +94,69 @@ function newCanvas() {
 
     
     // CANVAS ATTRIBUTES
-    canvas.onmousedown = function() { 
+    canvas.onmousedown = function(e) { 
         mouseDown = 1
         strokes.push(new Stroke(colour.repeat(1), weight)) // add new strokes 
+        strokes[strokes.length-1].points.push(new Point((e.clientX - canvasLeft)/canvas.width, (e.clientY - canvasTop)/canvas.height))
     }
     canvas.onmouseup = function() {
         mouseDown = 0
-        // check for empty lists
-        cleanstrokes()
+        cleanstrokes() // check for empty lists
+        redraw()
     }
 
     canvas.ontouchstart = function(e) {
         strokes.push(new Stroke(colour.repeat(1), weight)) // add new strokes 
-
+        strokes[strokes.length-1].points.push(new Point((e.touches[0].clientX - canvasLeft)/canvas.width, (e.touches[0].clientY - canvasTop)/canvas.height)) 
     }
 
-    canvas.ontouchend = cleanstrokes
+    canvas.ontouchend = function(){cleanstrokes(); redraw()}
 
-    canvas.ontouchmove = function(e) {
-        rect = canvas.getBoundingClientRect()
-        strokes[strokes.length-1].points.push(new Point((e.touches[0].clientX - rect.left)/rect.width, (e.touches[0].clientY - rect.top)/rect.height)) 
-    }
+    canvas.ontouchmove = function(e) { strokes[strokes.length-1].points.push(new Point((e.touches[0].clientX - canvasLeft)/canvas.width, (e.touches[0].clientY - canvasTop)/canvas.height)) }
 
     setInterval(draw, 20); // creates a routine to run the draw function
+
+    reframe()
 }
 
 function cleanstrokes() {
-    // deletes empty strokes if last stroke was empty
+    // deletes empty strokes if last stroke was empty, sort of defunct
     if (!strokes[strokes.length-1].points.length) {
         strokes.pop() // remove old strokes
     }
 }
-
 
 function draw() {
     // Called once every 20 ms to update the screen
     strokes.forEach(function(stroke, index, arr) {
         points = stroke.points
 
-        if (points[0]) {
-            ctx.beginPath()
+        switch(stroke.points.length) {
+            case 0: break;
 
-            ctx.strokeStyle = stroke.colour
-            ctx.lineWidth = stroke.weight;
+            case 1:
+                ctx.beginPath()
+                ctx.arc(points[0].x*canvas.width, points[0].y*canvas.height, stroke.weight, 0, 2 * Math.PI)
+                ctx.fillStyle = stroke.colour
+                ctx.fill()
 
-            ctx.moveTo(points[0].x*ctx.canvas.width, points[0].y*ctx.canvas.height)
+            default:
+                ctx.beginPath()
 
-            points.forEach(function(point, index, arr) {
-                ctx.lineTo(point.x*ctx.canvas.width, point.y*ctx.canvas.height)
+                ctx.strokeStyle = stroke.colour
+                ctx.lineWidth = stroke.weight;
+                ctx.lineCap = 'round'
+    
+                ctx.moveTo(points[0].x*ctx.canvas.width, points[0].y*ctx.canvas.height)
+    
+                points.forEach(function(point, index, arr) {
+                    ctx.lineTo(point.x*ctx.canvas.width, point.y*ctx.canvas.height)
+                    
+                })
+
                 ctx.stroke();
-            })
+
+                break;
         }
     })
 }
@@ -141,6 +164,8 @@ function draw() {
 function inRect(rect, x, y) {
     return (x > rect.left && x < rect.left + rect.width && y > rect.top && y < rect.top + rect.height)
 }
+
+
 
 function clearcanvas() {
     // Clears the canvas
@@ -152,15 +177,23 @@ function clearcanvas() {
 function undo() {
     // Undoes a step
     strokes.pop()
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    draw()
+    redraw()
 }
 
 function exportdrawing() {
+    exportbox = document.getElementById("exportbox")
+
+    text = document.createElement("p")
+    text.innerHTML = "Image: " + Date()
+
     img = new Image()
     img.src = canvas.toDataURL("image/png")
-    exportbox = document.getElementById("exportbox")
+
+    exportbox.appendChild(text)
     exportbox.appendChild(img)
+
+    
+
 }
 
 function exportdrawingdownload() {
