@@ -8,7 +8,19 @@ var mouseY
 
 let strokes = [] // List of strokes made by the user.
 
+
+/*
+EVENT TRIGGERS
+*/
 onmousemove = function(e){mouseX = e.clientX; mouseY = e.clientY}
+
+onresize = function() {
+    canvas.width = 0
+    canvas.width = drawingboard.clientWidth
+    canvas.height = canvas.width
+
+    draw()
+}
 
 // wizardy stupid JS code
 var mouseDown = 0;
@@ -46,12 +58,12 @@ function newCanvas() {
     setInterval(draw, 20); // creates a routine to run the draw function
 }
 
+
+
 function draw() {
     // Called once every 20 ms to update the screen
 
-    canvas.width = 0
-    canvas.width = drawingboard.clientWidth
-    canvas.height = canvas.width
+    
 
     rect = canvas.getBoundingClientRect()
 
@@ -95,14 +107,27 @@ function clickbutton() {
 }
 
 function exportdrawing() {
-    var img = new Image()
+    img = new Image()
     
-    img.src = canvas.toDataURL("image/png")
+    img.src = canvas.toDataURL("image/jpeg")
 
     drawingboard = document.getElementById("drawingboard")
 
     drawingboard.appendChild(img)
+
+    // Downloads the image
+    link = document.createElement("a")
+    link.href = img.src
+    link.setAttribute("download", "Comrade Drawing")
+    link.click()
+  
 }
+
+function exportdrawingcopy() {
+    copyToClipboard(canvas.toDataURL("image/jpeg", 0.1)) // 0.5 compression on jpg
+    copybutton = document.getElementById("copybutton")
+}
+
 
 function clearcanvas() {
     // Clears the canvas
